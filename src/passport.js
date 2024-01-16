@@ -40,7 +40,7 @@ passport.use(
           { user: userByEmail },
           process.env.JWT_SECRET_KEY,
           {
-            expiresIn: 10,
+            expiresIn: process.env.JWT_MAX_AGE || 15,
           }
         );
         console.log(JWT_TOKEN);
@@ -108,7 +108,7 @@ passport.use(
       await createDefaultPlaylists(newUser?._id);
 
       JWT_TOKEN = jwt.sign({ user: newUser }, process.env.JWT_SECRET_KEY, {
-        expiresIn: 10,
+        expiresIn: process.env.JWT_MAX_AGE || 15,
       });
       return callback(null, { ...profile, JWT_TOKEN });
     }
