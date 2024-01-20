@@ -17,7 +17,7 @@ videoRouter.get("/all", getAllVideos);
 videoRouter.get("/:id", getVideoById);
 
 videoRouter.get("/:id/comments", getCommentsByVideoID);
-videoRouter.post("/:videoID/comment", createComment);
+videoRouter.post("/:videoID/comment", isAuthorized, createComment);
 
 videoRouter.post(
   "/create",

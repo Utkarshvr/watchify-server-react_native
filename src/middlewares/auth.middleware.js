@@ -9,7 +9,7 @@ const isAuthorized = expressAsyncHandler(async (req, res, next) => {
   if (user) return next();
 
   const token = req.headers.authorization || req.headers.Authorization;
-  console.log(token);
+  // console.log(token);
 
   if (!token)
     return sendRes(
@@ -23,6 +23,7 @@ const isAuthorized = expressAsyncHandler(async (req, res, next) => {
     token.replace("Bearer ", ""),
     process.env.JWT_SECRET_KEY,
     (err, decoded) => {
+      console.log("USER IS AUTHENTCIATED ✅✅✅");
       // console.log({ decoded, err });
       if (err) return res.status(401).json({ message: "Invalid token" });
       req.user = { details: decoded.user };

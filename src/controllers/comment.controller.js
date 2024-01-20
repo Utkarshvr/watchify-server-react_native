@@ -7,6 +7,7 @@ const Videos = require("../models/Videos");
 const createComment = expressAsyncHandler(async function (req, res) {
   try {
     const user = req.user?.details;
+    console.log({ user });
     const { content } = req.body;
     const videoID = req.params.videoID;
     const parentCommentID = req.query.parentCommentID || null;
