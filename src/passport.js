@@ -13,13 +13,11 @@ passport.use(
     {
       clientID: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
-      // callbackURL: "/api/auth/google/callback",
       callbackURL: process.env.CALLBACK_URL || "/api/auth/google/callback",
       scope: ["profile", "email"],
     },
     async function (accessToken, refreshToken, profile, callback) {
       let JWT_TOKEN = "";
-      console.log(process.env.JWT_SECRET_KEY);
       // 1. Extract email & all other necessary fields
       const { email, given_name, family_name, name, picture } = profile?._json;
 
@@ -40,7 +38,7 @@ passport.use(
           { user: userByEmail },
           process.env.JWT_SECRET_KEY,
           {
-            expiresIn: process.env.JWT_MAX_AGE || 15,
+            expiresIn: Number(process.env.JWT_MAX_AGE) || 15,
           }
         );
         console.log(JWT_TOKEN);
@@ -108,7 +106,7 @@ passport.use(
       await createDefaultPlaylists(newUser?._id);
 
       JWT_TOKEN = jwt.sign({ user: newUser }, process.env.JWT_SECRET_KEY, {
-        expiresIn: process.env.JWT_MAX_AGE || 15,
+        expiresIn: Number(process.env.JWT_MAX_AGE) || 15,
       });
       return callback(null, { ...profile, JWT_TOKEN });
     }

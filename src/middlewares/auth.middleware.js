@@ -24,7 +24,7 @@ const isAuthorized = expressAsyncHandler(async (req, res, next) => {
     process.env.JWT_SECRET_KEY,
     (err, decoded) => {
       console.log("USER IS AUTHENTCIATED ✅✅✅");
-      // console.log({ decoded, err });
+      console.log({ err });
       if (err) return res.status(401).json({ message: "Invalid token" });
       req.user = { details: decoded.user };
       next();
