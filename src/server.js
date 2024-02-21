@@ -40,9 +40,9 @@ app.use(
     }),
     cookie: {
       maxAge: 24 * 60 * 60 * 1000 * 7,
-      // sameSite: "None", // Allow cross-site cookies
-      // secure: true, // Only send cookies over HTTPS
-      // httpOnly: true, // Prevent client-side script access
+      sameSite: "None", // Allow cross-site cookies
+      secure: true, // Only send cookies over HTTPS
+      httpOnly: true, // Prevent client-side script access
     },
   })
 );
