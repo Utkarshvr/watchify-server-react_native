@@ -8,6 +8,8 @@ const Playlists = require("./models/Playlist");
 const generateUniqueChannelID = require("./helpers/generateChannelID");
 const randomNumber = require("./helpers/randomNumber");
 
+console.log(process.env.CALLBACK_URL);
+
 passport.use(
   new GoogleStrategy(
     {
@@ -28,6 +30,11 @@ passport.use(
         const defaultPlaylists = await Playlists.find({
           isDefault: true,
           owner: userByEmail?._id,
+        });
+
+        console.log({
+          USER_ID: userByEmail?._id,
+          defaultPlaylists: `Playlists: ${defaultPlaylists.length}`,
         });
 
         if (defaultPlaylists?.length === 0)

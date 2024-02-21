@@ -19,25 +19,41 @@ router.get("/google", passport.authenticate("google", ["profile", "email"]));
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    // successRedirect: process.env.CLIENT_URL,
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
-    console.log({
-      USER___USER: req.user,
-      SESSION: req.sessionID,
-      // cookie: req.cookies,
-      // connectSID: req.cookies["connect.sid"],
-    });
+    // Check if the request is from a mobile client
+    const userAgent = req.headers["user-agent"];
+    const isMobile =
+      userAgent.includes("Mobile") ||
+      userAgent.includes("Android" || userAgent.includes("Ios"));
 
-    // console.log(req);
-    // res.redirect(process.env.CLIENT_URL);
+    // Construct the redirect URL based on the client type
+    const redirectUrl = isMobile
+      ? `${process.env.MOBILE_CLIENT_URL}?firstName=${req.user?._json?.given_name}&lastName=${req.user?._json?.family_name}&email=${req.user?._json?.email}&JWT_TOKEN=${req.user?.JWT_TOKEN}`
+      : process.env.CLIENT_URL;
 
-    res.redirect(
-      `${process.env.CLIENT_URL}?firstName=${req.user?._json?.given_name}/lastName=${req.user?._json?.family_name}/email=${req.user?._json?.email}/JWT_TOKEN=${req.user?.JWT_TOKEN}`
-    );
+    console.log({ userAgent, isMobile, redirectUrl });
+
+    // Redirect to the determined URL
+    res.redirect(redirectUrl);
   }
 );
+
+// router.get(
+//   "/mobile/google/callback",
+//   passport.authenticate("google", {
+//     failureRedirect: "/login/failed",
+//   }),
+//   (req, res) => {
+//     // if (the request is from mobile)
+//     res.redirect(
+//       `${process.env.MOBILE_CLIENT_URL}?firstName=${req.user?._json?.given_name}/lastName=${req.user?._json?.family_name}/email=${req.user?._json?.email}/JWT_TOKEN=${req.user?.JWT_TOKEN}`
+//     );
+//     // else if (the request is from website)
+//     res.redirect(process.env.CLIENT_URL)
+//   }
+// );
 
 router.get("/logout", (req, res) => {
   req.logout();

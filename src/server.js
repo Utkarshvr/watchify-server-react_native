@@ -33,26 +33,27 @@ app.use(cookieParser());
 app.use(
   session({
     secret: "your_secret_key",
-    resave: false, // Avoid unnecessary session store writes
-    saveUninitialized: false, // Avoid storing uninitialized sessions
+    resave: false,
+    saveUninitialized: false,
     store: new MemoryStore({
-      checkPeriod: 86400000, // prune expired entries every 24h
+      checkPeriod: 86400000,
     }),
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000 * 7, // 7 days in milliseconds
-      path: "/",
-      // sameSite: process.env.IN_DEVELOPMENT !== "YES" ? "none" : "lax",
-      // secure: process.env.IN_DEVELOPMENT !== "YES",
-      sameSite: "none",
-      secure: true,
-      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 * 7,
+      // sameSite: "None", // Allow cross-site cookies
+      // secure: true, // Only send cookies over HTTPS
+      // httpOnly: true, // Prevent client-side script access
     },
   })
 );
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "https://watchify-server.onrender.com"],
+    origin: [
+      process.env.CLIENT_URL,
+      "http://localhost:5173",
+      "https://watchify-server.onrender.com",
+    ],
     credentials: true,
   },
 });

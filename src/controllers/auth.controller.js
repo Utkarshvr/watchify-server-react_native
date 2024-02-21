@@ -9,7 +9,7 @@ const login = asyncHandler(async (req, res) => {
   if (req.user) {
     // console.log(req.user);
     // 1. Extract email & all other necessary fields
-    const { email } = req.user.details;
+    const { email } = req.user?._json || req.user?.details;
     const userByEmail = await User.findOne({ email });
 
     if (!userByEmail)
@@ -20,6 +20,7 @@ const login = asyncHandler(async (req, res) => {
         "User doesn't exist with the email"
       );
 
+    req.user.details = userByEmail;
     console.log("Given the user his detials!!!😊😊😊");
 
     return sendRes(res, 200, { user: userByEmail }, "User found successfully");
