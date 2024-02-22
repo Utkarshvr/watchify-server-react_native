@@ -4,6 +4,7 @@ const allowedOrigins = [
   "https://watchify-client.vercel.app",
   "http://watchify-client.vercel.app",
   "https://uv-watchify.netlify.app",
+  "https://watchifyclient.serveo.net",
   process.env.CLIENT_URL,
 ];
 module.exports = allowedOrigins;

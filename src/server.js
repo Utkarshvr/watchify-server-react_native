@@ -54,6 +54,7 @@ const io = new Server(server, {
       process.env.CLIENT_URL,
       "http://localhost:5173",
       "https://watchify-server.onrender.com",
+      "https://watchifyclient.serveo.net/",
     ],
     credentials: true,
   },
