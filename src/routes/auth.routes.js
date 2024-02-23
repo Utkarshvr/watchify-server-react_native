@@ -14,7 +14,19 @@ router.get("/login/failed", (req, res) => {
   });
 });
 
-router.get("/google", passport.authenticate("google", ["profile", "email"]));
+router.get(`/google`, (req, res, next) => {
+  const { source } = req.query;
+  console.log(source);
+  const state = source
+    ? Buffer.from(JSON.stringify({ source })).toString("base64")
+    : undefined;
+
+  const authenticator = passport.authenticate("google", {
+    scope: ["profile", "email"],
+    state,
+  });
+  authenticator(req, res, next);
+});
 
 router.get(
   "/google/callback",
@@ -22,38 +34,25 @@ router.get(
     failureRedirect: "/login/failed",
   }),
   (req, res) => {
-    // Check if the request is from a mobile client
-    const userAgent = req.headers["user-agent"];
-    const isMobile =
-      userAgent.includes("Mobile") ||
-      userAgent.includes("Android" || userAgent.includes("Ios"));
+    try {
+      const { state } = req.query;
+      const { source } = JSON.parse(Buffer.from(state, "base64").toString());
+      console.log({ source });
+      if (typeof source === "string") {
+        const isMobile = source === "mobile";
 
-    // Construct the redirect URL based on the client type
-    const redirectUrl = isMobile
-      ? `${process.env.MOBILE_CLIENT_URL}?firstName=${req.user?._json?.given_name}&lastName=${req.user?._json?.family_name}&email=${req.user?._json?.email}&JWT_TOKEN=${req.user?.JWT_TOKEN}`
-      : process.env.CLIENT_URL;
+        const redirectUrl = isMobile
+          ? `${process.env.MOBILE_CLIENT_URL}?firstName=${req.user?._json?.given_name}&lastName=${req.user?._json?.family_name}&email=${req.user?._json?.email}&JWT_TOKEN=${req.user?.JWT_TOKEN}`
+          : process.env.CLIENT_URL;
 
-    console.log({ userAgent, isMobile, redirectUrl });
-
-    // Redirect to the determined URL
-    res.redirect(redirectUrl);
+        return res.redirect(redirectUrl);
+      }
+    } catch {
+      // just redirect normally below
+      res.redirect("/login/failed");
+    }
   }
 );
-
-// router.get(
-//   "/mobile/google/callback",
-//   passport.authenticate("google", {
-//     failureRedirect: "/login/failed",
-//   }),
-//   (req, res) => {
-//     // if (the request is from mobile)
-//     res.redirect(
-//       `${process.env.MOBILE_CLIENT_URL}?firstName=${req.user?._json?.given_name}/lastName=${req.user?._json?.family_name}/email=${req.user?._json?.email}/JWT_TOKEN=${req.user?.JWT_TOKEN}`
-//     );
-//     // else if (the request is from website)
-//     res.redirect(process.env.CLIENT_URL)
-//   }
-// );
 
 router.get("/logout", (req, res) => {
   req.logout();
