@@ -40,10 +40,10 @@ app.use(
     }),
     cookie: {
       maxAge: 24 * 60 * 60 * 1000 * 7,
-      // sameSite: "none", // Allow cross-site cookies
-      // secure: true, // Only send cookies over HTTPS
-      // // domain: ".onrender.com",
-      // httpOnly: true, // Prevent client-side script access
+      sameSite: "none", // Allow cross-site cookies
+      secure: true, // Only send cookies over HTTPS
+      // domain: ".onrender.com",
+      httpOnly: true, // Prevent client-side script access
     },
   })
 );
