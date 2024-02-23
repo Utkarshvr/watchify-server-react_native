@@ -9,12 +9,15 @@ const likesRouter = require("./likes.routes.js");
 const channelRouter = require("./channel.routes.js");
 const playlilstRouter = require("./playlist.routes.js");
 const commentRouter = require("./comment.routes.js");
+const addUserInfoInReq = require("../middlewares/add-user-info.middleware.js");
 
 const rootRoute = express.Router();
 
 rootRoute.get("/", (req, res) =>
   res.status(200).json({ msg: "Welcome to Watchify API" })
 );
+
+rootRoute.use(addUserInfoInReq);
 
 rootRoute.use("/auth", authRoute);
 

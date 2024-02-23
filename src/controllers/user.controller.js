@@ -339,10 +339,52 @@ const markNotificationsAsRead = asyncHandler(async (req, res) => {
 const getUsersSubscription = asyncHandler(async (req, res) => {
   try {
     const userID = req.user?.details?._id;
+    console.log(userID);
+    // const subscriptions = await Subscribers.find({
+    //   subscriber: userID,
+    // }).populate("channel");
 
-    const subscriptions = await Subscribers.find({
-      subscriber: userID,
-    }).populate("channel");
+    const subscriptions = await Subscribers.aggregate([
+      {
+        $match: {
+          subscriber: new Types.ObjectId(userID),
+        },
+      },
+      {
+        $lookup: {
+          from: "users", // Assuming your channel collection is named "channels"
+          localField: "channel",
+          foreignField: "_id",
+          as: "channel",
+          pipeline: [
+            {
+              $lookup: {
+                from: "subscribers",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers",
+              },
+            },
+            {
+              $addFields: {
+                isSubscribed: true,
+
+                subscribers_count: {
+                  $size: "$subscribers",
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: "$channel",
+      },
+    ]);
+
+    console.log(subscriptions);
+
+    // Now, the 'subscriptions' variable contains the aggregated data with populated 'channelInfo' field.
 
     return sendRes(res, 200, { subscriptions }, "Subscriptions");
   } catch (error) {

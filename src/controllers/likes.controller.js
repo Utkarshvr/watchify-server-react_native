@@ -22,6 +22,7 @@ const likeContent = expressAsyncHandler(async function (req, res) {
         : { _id: contentID }),
     }).lean();
 
+    console.log({ userID });
     console.log({ existingContent });
 
     if (!existingContent)

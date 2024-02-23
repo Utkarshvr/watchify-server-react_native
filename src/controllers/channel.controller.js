@@ -9,6 +9,8 @@ const getChannelByID = asyncHandler(async function (req, res) {
   const { channelID } = req.params;
   const userID = req.user?.details?._id;
 
+  console.log({ userID });
+
   try {
     const channel = await User.aggregate([
       {
