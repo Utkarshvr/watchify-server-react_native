@@ -91,10 +91,25 @@ const getVideosByUser = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "likes",
+        from: "comments",
         localField: "_id",
         foreignField: "video",
+        as: "comments",
+      },
+    },
+    {
+      $lookup: {
+        from: "playlists",
+        localField: "_id",
+        foreignField: "videos",
         as: "likes",
+        pipeline: [
+          {
+            $match: {
+              title: "Liked Videos",
+            },
+          },
+        ],
       },
     },
     {
@@ -103,6 +118,25 @@ const getVideosByUser = asyncHandler(async (req, res) => {
         localField: "creator",
         foreignField: "_id",
         as: "creator",
+        pipeline: [
+          {
+            $lookup: {
+              from: "subscribers",
+              localField: "_id",
+              foreignField: "channel",
+              as: "subscribers",
+            },
+          },
+          {
+            $addFields: {
+              isSubscribed: true,
+
+              subscribers_count: {
+                $size: "$subscribers",
+              },
+            },
+          },
+        ],
       },
     },
     {
@@ -116,10 +150,11 @@ const getVideosByUser = asyncHandler(async (req, res) => {
     {
       $addFields: {
         likes_count: { $size: "$likes" },
+        comments_count: { $size: "$comments" },
         isLiked: {
           $cond: {
             if: {
-              $in: [new Types.ObjectId(userID), "$likes.likedBy"],
+              $in: [new Types.ObjectId(userID), "$likes.owner"],
             },
             then: true,
             else: false,

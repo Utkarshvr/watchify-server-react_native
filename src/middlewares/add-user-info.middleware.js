@@ -10,7 +10,7 @@ const addUserInfoInReq = expressAsyncHandler(async (req, res, next) => {
       token.replace("Bearer ", ""),
       process.env.JWT_SECRET_KEY,
       (err, decoded) => {
-        req.user = { details: decoded.user };
+        if (decoded?.user) req.user = { details: decoded.user };
       }
     );
   next();

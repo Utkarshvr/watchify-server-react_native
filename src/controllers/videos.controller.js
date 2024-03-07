@@ -294,174 +294,102 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 const getAllVideos = asyncHandler(async (req, res) => {
   const userID = req.user?.details?._id;
-
-  const videos = await Videos.aggregate([
-    {
-      $lookup: {
-        from: "playlists",
-        localField: "_id",
-        foreignField: "videos",
-        as: "likes",
-        pipeline: [
-          {
-            $match: {
-              title: "Liked Videos",
-            },
-          },
-        ],
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "creator",
-        foreignField: "_id",
-        as: "creator",
-      },
-    },
-    {
-      $lookup: {
-        from: "watch-histories",
-        localField: "_id",
-        foreignField: "video",
-        as: "views",
-      },
-    },
-    {
-      $addFields: {
-        likes_count: { $size: "$likes" },
-        isLiked: {
-          $cond: {
-            if: {
-              $in: [new ObjectId(userID), "$likes.owner"],
-            },
-            then: true,
-            else: false,
-          },
-        },
-        creator: {
-          $first: "$creator",
-        },
-
-        views_count: { $size: "$views" },
-        isViewed: {
-          $cond: {
-            if: {
-              $in: [new ObjectId(userID), "$views.viewer"],
-            },
-            then: true,
-            else: false,
-          },
-        },
-        lastWatched: {
-          $let: {
-            vars: {
-              matchedView: {
-                $arrayElemAt: [
-                  {
-                    $filter: {
-                      input: "$views",
-                      as: "view",
-                      cond: {
-                        $eq: ["$$view.viewer", new ObjectId(userID)],
-                      },
-                    },
-                  },
-                  0,
-                ],
+  console.log("Request came to get all videos", { userID });
+  try {
+    const videos = await Videos.aggregate([
+      {
+        $lookup: {
+          from: "playlists",
+          localField: "_id",
+          foreignField: "videos",
+          as: "likes",
+          pipeline: [
+            {
+              $match: {
+                title: "Liked Videos",
               },
             },
-            in: "$$matchedView.lastWatched",
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "creator",
+          foreignField: "_id",
+          as: "creator",
+        },
+      },
+      {
+        $lookup: {
+          from: "watch-histories",
+          localField: "_id",
+          foreignField: "video",
+          as: "views",
+        },
+      },
+      {
+        $addFields: {
+          likes_count: { $size: "$likes" },
+          isLiked: {
+            $cond: {
+              if: {
+                $in: [new ObjectId(userID), "$likes.owner"],
+              },
+              then: true,
+              else: false,
+            },
+          },
+          creator: {
+            $first: "$creator",
+          },
+
+          views_count: { $size: "$views" },
+          isViewed: {
+            $cond: {
+              if: {
+                $in: [new ObjectId(userID), "$views.viewer"],
+              },
+              then: true,
+              else: false,
+            },
+          },
+          lastWatched: {
+            $let: {
+              vars: {
+                matchedView: {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: "$views",
+                        as: "view",
+                        cond: {
+                          $eq: ["$$view.viewer", new ObjectId(userID)],
+                        },
+                      },
+                    },
+                    0,
+                  ],
+                },
+              },
+              in: "$$matchedView.lastWatched",
+            },
           },
         },
       },
-    },
-    {
-      $match: {
-        isPublic: true,
+      {
+        $match: {
+          isPublic: true,
+        },
       },
-    },
-  ]).sort({ createdAt: -1 });
+    ]).sort({ createdAt: -1 });
 
-  // const videos = await Videos.aggregate([
-  //   {
-  //     $lookup: {
-  //       from: "likes",
-  //       localField: "_id",
-  //       foreignField: "video",
-  //       as: "likes",
-  //     },
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "users",
-  //       localField: "creator",
-  //       foreignField: "_id",
-  //       as: "creator",
-  //     },
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "watch-histories",
-  //       localField: "videoID",
-  //       foreignField: "video",
-  //       as: "views",
-  //     },
-  //   },
-  //   {
-  //     $addFields: {
-  //       likes_count: { $size: "$likes" },
-  //       isLiked: {
-  //         $cond: {
-  //           if: {
-  //             $in: [new ObjectId(userID), "$likes.likedBy"],
-  //           },
-  //           then: true,
-  //           else: false,
-  //         },
-  //       },
-  //       creator: {
-  //         $first: "$creator",
-  //       },
-
-  //       views_count: { $size: "$views" },
-  //       isViewed: {
-  //         $cond: {
-  //           if: {
-  //             $in: [new ObjectId(userID), "$views.viewer"],
-  //           },
-  //           then: true,
-  //           else: false,
-  //         },
-  //       },
-  //       lastWatched: {
-  //         $let: {
-  //           vars: {
-  //             matchedView: {
-  //               $arrayElemAt: [
-  //                 {
-  //                   $filter: {
-  //                     input: "$views",
-  //                     as: "view",
-  //                     cond: {
-  //                       $eq: ["$$view.viewer", new ObjectId(userID)],
-  //                     },
-  //                   },
-  //                 },
-  //                 0,
-  //               ],
-  //             },
-  //           },
-  //           in: "$$matchedView.lastWatched",
-  //         },
-  //       },
-  //     },
-  //   },
-  // ]).sort({ createdAt: -1 });
-
-  res.status(200).json({
-    videos,
-  });
+    res.status(200).json({
+      videos,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 const getCommentsByVideoID = asyncHandler(async (req, res) => {
