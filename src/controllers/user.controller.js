@@ -11,10 +11,10 @@ const Subscribers = require("../models/Subscribers");
 
 const customizeUser = asyncHandler(async (req, res) => {
   const { name, desc, user_handle, links } = req.body;
-
+  const userID = req.user?.details?._id;
   // Try to update the basic info first
   let updatedUser = await User.findByIdAndUpdate(
-    req.params.id,
+    userID,
 
     {
       $set: { name, user_handle, links, desc },
@@ -44,7 +44,7 @@ const customizeUser = asyncHandler(async (req, res) => {
 
   if (uploadedUserPic?.url || uploadedBannerPic?.url) {
     updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
+      userID,
 
       {
         $set: {
