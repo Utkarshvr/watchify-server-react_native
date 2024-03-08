@@ -10,12 +10,34 @@ const channelRouter = require("./channel.routes.js");
 const playlilstRouter = require("./playlist.routes.js");
 const commentRouter = require("./comment.routes.js");
 const addUserInfoInReq = require("../middlewares/add-user-info.middleware.js");
+const upload = require("../middlewares/multer.middlewares.js");
 
 const rootRoute = express.Router();
 
 rootRoute.get("/", (req, res) =>
   res.status(200).json({ msg: "Welcome to Watchify API" })
 );
+
+rootRoute.post(
+  "/upload-img",
+  upload.fields([{ name: "img", maxCount: 1 }]),
+  (req, res) => {
+    const imgPath = req.files?.img ? req.files?.img[0]?.path : null;
+    console.log({ imgPath });
+
+    res.status(200).json({ msg: "Tried uploading an img", imgPath });
+  }
+);
+
+rootRoute.get("/notify-me", (req, res) => {
+  const socket = req.app.get("socket");
+  socket.emit("notify-user", {
+    title: "🔔🔔 This is a real-time notification 🔔🔔",
+    desc: "🔔🔔 Description 🔔🔔",
+  });
+
+  res.status(200).json({ msg: "🔔🔔Sent u a notification, Check it out!🔔🔔" });
+});
 
 rootRoute.use(addUserInfoInReq);
 

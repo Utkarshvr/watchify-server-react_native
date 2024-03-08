@@ -52,6 +52,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       process.env.CLIENT_URL,
+      process.env.MOBILE_CLIENT_URL,
       "http://localhost:5173",
       "https://watchify-server.onrender.com",
       "https://watchifyclient.serveo.net/",
@@ -80,7 +81,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get("/", (req, res) => {
-  console.log({ passport_user: req?.session.passport?.user });
   res.status(200).json({ msg: "Welcome to Watchify API" });
 });
 

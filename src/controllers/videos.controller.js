@@ -20,6 +20,8 @@ const createVideo = asyncHandler(async (req, res) => {
   const { title, desc, isPublic, selectedPlaylists } = req.body;
   const todayDate = new Date();
 
+  console.log(req.body);
+
   const progress_notification = {
     user: creator,
     content: "Video is Uploading. It may take a few minutes",
@@ -52,6 +54,7 @@ const createVideo = asyncHandler(async (req, res) => {
       ? req.files?.thumbnail[0]?.path
       : null;
 
+    console.log({ videoPath, thumbnailPath });
     const uploadedVideo = videoPath
       ? await uploadOnCloudinary(videoPath)
       : null;
@@ -61,15 +64,19 @@ const createVideo = asyncHandler(async (req, res) => {
       : null;
 
     if (!uploadedVideo?.url) throw Error("Couldn't upload the video");
-
+    console.log("::AFTER_UPLOADING_ON_CLOUDINARY", {
+      uploadedVideo,
+      uploadedThumbnail,
+    });
     const videoID = generateVideoId(16);
 
     const newVideo = await Videos.create({
       title,
       desc,
       creator,
-      link: uploadedVideo?.url,
-      thumbnail: uploadedThumbnail?.url || "",
+      link: uploadedVideo?.secure_url,
+      thumbnail: uploadedThumbnail?.secure_url || "",
+      duration: uploadedVideo?.duration,
       videoID,
       isPublic: isPublic === null ? true : JSON.parse(isPublic),
     });
@@ -107,6 +114,7 @@ const createVideo = asyncHandler(async (req, res) => {
       msg: "Video Uploaded Successfully",
     });
   } catch (error) {
+    console.log(error);
     const error_notification = {
       user: creator,
       content: "Video Uploaded Failed",
