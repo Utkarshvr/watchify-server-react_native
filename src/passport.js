@@ -23,7 +23,10 @@ passport.use(
       // 1. Extract email & all other necessary fields
       const { email, given_name, family_name, name, picture } = profile?._json;
 
+      console.log({ profile: profile?._json });
+
       const userByEmail = await User.findOne({ email });
+      console.log({ userByEmail });
 
       // 2. if email already exists in the DB. Return it & it's done
       if (userByEmail) {
@@ -70,7 +73,7 @@ passport.use(
 
         // Check if the generated userHandle already exists in the database
         const existingUser = await User.findOne({ user_handle: userHandle });
-        // console.log("Unique: ", userHandle, !existingUser);
+        console.log("Unique: ", !existingUser, userHandle);
 
         // If no user is found with the generated userHandle, it's unique
         if (!existingUser) {
@@ -83,7 +86,7 @@ passport.use(
 
         // Check if the generated userHandle already exists in the database
         const existingUser = await User.findOne({ channelID });
-        // console.log("Unique ", channelID, !existingUser);
+        console.log("Unique ", !existingUser, channelID);
 
         // If no user is found with the generated userHandle, it's unique
         if (!existingUser) {
@@ -106,11 +109,22 @@ passport.use(
         desc: "",
       };
       // console.log(userObj);
-
-      let newUser = await User.create(userObj);
-
-      // Create Default Playlists
-      await createDefaultPlaylists(newUser?._id);
+      let newUser;
+      try {
+        newUser = await User.create(userObj);
+        console.log("::User.create()::", { newUser });
+      } catch (error) {
+        console.log("::User.create()::", error);
+        return callback(error, null);
+      }
+      try {
+        // Create Default Playlists
+        console.log({ newUser });
+        if (newUser) await createDefaultPlaylists(newUser?._id);
+      } catch (error) {
+        console.log("::createDefaultPlaylists::", error);
+        return callback(error, null);
+      }
 
       JWT_TOKEN = jwt.sign({ user: newUser }, process.env.JWT_SECRET_KEY, {
         expiresIn: Number(process.env.JWT_MAX_AGE) || 15,
